@@ -5,6 +5,7 @@ import time
 import json
 import os
 import re
+from utils import clean_text
 import base64
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -24,8 +25,8 @@ body::before { content: ""; position: fixed; inset: 0; background: radial-gradie
 .stContainer, .stExpander, .report-card, div[data-testid="stVerticalBlock"] > div {
     background: rgba(17, 25, 40, 0.55) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.45); padding: 14px;
 }
-div[data-testid="stVerticalBlock"] > div:first-child { background: none !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; padding: 0 !important; }
-div[data-testid="stVerticalBlock"] > div:first-child * { background: none !important; }
+div[data-testid="stVerticalBlock"] > div:first-child {background: none !important;  border: none !important; box-shadow: none !important; backdrop-filter: none !important; padding: 0 !important; }
+div[data-testid="stVerticalBlock"] > div:first-child * {background: none !important;  }
 
 .stTextArea textarea { background: rgba(2, 6, 23, 0.7); color: #E5E7EB; border-radius: 12px; border: 1px solid rgba(148,163,184,0.25); }
 .stTextArea textarea:focus { border-color: #38BDF8; box-shadow: 0 0 8px rgba(56,189,248,0.35); }
@@ -39,7 +40,7 @@ div[data-testid="stVerticalBlock"] > div:first-child * { background: none !impor
 
 .stProgress > div > div { background: linear-gradient(90deg, #38BDF8, #8B5CF6); box-shadow: 0 0 8px rgba(56,189,248,0.6); }
 
-.highlight { background: rgba(239,68,68,0.85); border-radius: 4px; padding: 1px 4px; color: #fff; }
+.highlight { background-color: rgba(239,68,68,0.85); border-radius: 4px; padding: 1px 4px; color: #ff0000; font-weight: bold}
 
 summary { font-weight: 600; color: #E5E7EB; }
 
@@ -203,18 +204,19 @@ with left_col:
         placeholder.empty()
         st.success("Dataset loaded successfully")
 
-        # ---------- SHOW FIRST 5 ROWS FULL WIDTH ----------
-        st.dataframe(data.head(), use_container_width=True)
+        # CLEAN TEXT COLUMN (IMPORTANT)
+        data["clean_text"] = data["text"].apply(clean_text)
 
-        # ---------- FULL SCREEN MODAL BUTTON ----------
-        # ---------- FULL SCREEN MODAL BUTTON ----------
+
+        # ---------- SHOW FIRST 5 ROWS FULL WIDTH ----------
+
+        st.dataframe(data[["text", "clean_text", "label"]].head(), use_container_width=True)
+
+
         # ---------- FULL SCREEN DATASET BUTTON ----------
         if st.button("🔍 View Full Dataset"):
             st.markdown("### Full Dataset View")
-            st.dataframe(data, use_container_width=True)
-
-
-
+            st.dataframe(data[["text", "clean_text", "label"]], use_container_width=True)
 
 
         # ---------- TRAIN MODEL BUTTON ----------
@@ -222,7 +224,7 @@ with left_col:
             with st.spinner("Training model..."):
                 time.sleep(1)
                 X_train, X_test, y_train, y_test = train_test_split(
-                    data["text"], data["label"], test_size=0.2, random_state=42
+                    data["clean_text"], data["label"], test_size=0.2, random_state=42
                 )
                 vectorizer = TfidfVectorizer(max_features=7000, ngram_range=(1,2))
                 X_train_vec = vectorizer.fit_transform(X_train)
@@ -247,7 +249,7 @@ with left_col:
             st.error("❌ Train the model first")
             st.stop()
         if user_text.strip():
-            cleaned = user_text.lower()
+            cleaned = clean_text(user_text)
             vec = vectorizer.transform([cleaned])
             base_prob = model.predict_proba(vec)[0][1]*100
             dep_words = extract_depression_words(cleaned)
@@ -255,7 +257,7 @@ with left_col:
             # ---------- POSITIVE WORDS ----------
             positive_words = [
                 "happy","blessed","excited","fun","love","smile","yay","awesome","amazing","joy",
-                "grateful","best day","good vibes","lit","😍","😂","😎","✨","🥰","💖","🥳","💯","😁","😃"
+                "grateful","best day","good vibes","lit","red_heart","face_with_tears_of_joy","smiling_face","sparkles"
             ]
 
             # ---------- SCORE CALCULATION ----------
