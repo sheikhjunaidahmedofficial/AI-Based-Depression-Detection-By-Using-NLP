@@ -16,40 +16,150 @@ from sklearn.metrics import accuracy_score
 st.set_page_config(page_title="AI Depression Detection", page_icon="logo.png", layout="wide")
 REPORT_FILE = "reports.json"
 
+# ================== BACKGROUND IMAGE ==================
+with open("bg.jpg", "rb") as f:
+    encoded = base64.b64encode(f.read()).decode()
+
+
 # ================== CSS ==================
-st.markdown("""
+st.markdown(f"""
 <style>
-body { background: radial-gradient(circle at top left, #0f172a 0%, #020617 45%, #000000 100%); color: #E5E7EB; }
-body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(56,189,248,0.06), transparent 40%), radial-gradient(circle at 20% 80%, rgba(139,92,246,0.05), transparent 40%); z-index: -1; }
+.stApp {{
+    background-image: url("data:image/jpg;base64,{encoded}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}}
 
-.stContainer, .stExpander, .report-card, div[data-testid="stVerticalBlock"] > div {
-    background: rgba(17, 25, 40, 0.55) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.45); padding: 14px;
-}
-div[data-testid="stVerticalBlock"] > div:first-child {background: none !important;  border: none !important; box-shadow: none !important; backdrop-filter: none !important; padding: 0 !important; }
-div[data-testid="stVerticalBlock"] > div:first-child * {background: none !important;  }
 
-.stTextArea textarea { background: rgba(2, 6, 23, 0.7); color: #E5E7EB; border-radius: 12px; border: 1px solid rgba(148,163,184,0.25); }
-.stTextArea textarea:focus { border-color: #38BDF8; box-shadow: 0 0 8px rgba(56,189,248,0.35); }
+body {{
+    background: radial-gradient(circle at top left, #0f172a 0%, #020617 45%, #000000 100%);
+    color: #E5E7EB;
+}}
 
-.stButton > button { background: linear-gradient(135deg, #020617, #111827); color: #E5E7EB; border: 1px solid rgba(56,189,248,0.35); border-radius: 12px; padding: 0.6em 1.4em; font-weight: 600; letter-spacing: 0.3px; transition: all 0.3s ease; }
-.stButton > button:hover { transform: translateY(-1px); box-shadow: 0 0 12px rgba(56,189,248,0.45); border-color: #38BDF8; }
-.stButton > button:active { transform: scale(0.97); }
+body::before {{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 80% 20%, rgba(56,189,248,0.06), transparent 40%),
+        radial-gradient(circle at 20% 80%, rgba(139,92,246,0.05), transparent 40%);
+    z-index: -1;
+}}
 
-.skeleton-cell { height: 18px; margin: 6px 0; background: linear-gradient(90deg, #020617 25%, #1e293b 37%, #020617 63%); background-size: 400% 100%; animation: shimmer 2.5s infinite; border-radius: 6px; }
-@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.stContainer,
+.stExpander,
+.report-card,
+div[data-testid="stVerticalBlock"] > div {{
+    background: rgba(17, 25, 40, 0.55) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    padding: 14px;
+}}
 
-.stProgress > div > div { background: linear-gradient(90deg, #38BDF8, #8B5CF6); box-shadow: 0 0 8px rgba(56,189,248,0.6); }
+div[data-testid="stVerticalBlock"] > div:first-child {{
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+}}
 
-.highlight { background-color: rgba(239,68,68,0.85); border-radius: 4px; padding: 1px 4px; color: #ff0000; font-weight: bold}
+div[data-testid="stVerticalBlock"] > div:first-child * {{
+    background: none !important;
+}}
 
-summary { font-weight: 600; color: #E5E7EB; }
+.stTextArea textarea {{
+    background: rgba(2, 6, 23, 0.7);
+    color: #E5E7EB;
+    border-radius: 12px;
+    border: 1px solid rgba(148,163,184,0.25);
+}}
 
-button[kind="secondary"] { border-color: rgba(239,68,68,0.5) !important; }
-button[kind="secondary"]:hover { box-shadow: 0 0 10px rgba(239,68,68,0.6) !important; }
+.stTextArea textarea:focus {{
+    border-color: #38BDF8;
+    box-shadow: 0 0 8px rgba(56,189,248,0.35);
+}}
 
-.st-emotion-cache-zy6yx3 { width: 100% !important; padding: 3.5rem 3rem 10rem !important; max-width: initial !important; min-width: auto !important; }
+.stButton > button {{
+    background: linear-gradient(135deg, #020617, #111827);
+    color: #E5E7EB;
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 12px;
+    padding: 0.6em 1.4em;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+}}
 
-#upload-dataset-optional, #report-history, #analyze-new-text { font-size: 2.02rem !important; font-weight: 600; letter-spacing: 0.2px; opacity: 0.9; }
+.stButton > button:hover {{
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(56,189,248,0.45);
+    border-color: #38BDF8;
+}}
+
+.stButton > button:active {{
+    transform: scale(0.97);
+}}
+
+.skeleton-cell {{
+    height: 18px;
+    margin: 6px 0;
+    background: linear-gradient(90deg, #020617 25%, #1e293b 37%, #020617 63%);
+    background-size: 400% 100%;
+    animation: shimmer 2.5s infinite;
+    border-radius: 6px;
+}}
+
+@keyframes shimmer {{
+    0% {{ background-position: 100% 0; }}
+    100% {{ background-position: -100% 0; }}
+}}
+
+.stProgress > div > div {{
+    background: linear-gradient(90deg, #38BDF8, #8B5CF6);
+    box-shadow: 0 0 8px rgba(56,189,248,0.6);
+}}
+
+.highlight {{
+    background-color: rgba(239,68,68,0.85);
+    border-radius: 4px;
+    padding: 1px 4px;
+    color: #ff0000;
+    font-weight: bold;
+}}
+
+summary {{
+    font-weight: 600;
+    color: #E5E7EB;
+}}
+
+button[kind="secondary"] {{
+    border-color: rgba(239,68,68,0.5) !important;
+}}
+
+button[kind="secondary"]:hover {{
+    box-shadow: 0 0 10px rgba(239,68,68,0.6) !important;
+}}
+
+.st-emotion-cache-zy6yx3 {{
+    width: 100% !important;
+    padding: 3.5rem 3rem 10rem !important;
+    max-width: initial !important;
+    min-width: auto !important;
+}}
+
+#upload-dataset-optional,
+#report-history,
+#analyze-new-text {{
+    font-size: 2.02rem !important;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    opacity: 0.9;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -303,5 +413,3 @@ with right_col:
 
 st.markdown("---")
 st.caption("🎓 FYP – AI-Based Depression Detection")
-
-
