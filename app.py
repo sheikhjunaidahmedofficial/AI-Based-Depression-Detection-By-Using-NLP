@@ -13,11 +13,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 # ================== PAGE CONFIG ==================
-st.set_page_config(page_title="AI Depression Detection", page_icon="logo.png", layout="wide")
+st.set_page_config(page_title="AI Depression Detection", page_icon="assets/logo.png", layout="wide")
 REPORT_FILE = "reports.json"
 
 # ================== BACKGROUND IMAGE ==================
-with open("bg.jpg", "rb") as f:
+with open("assets/bg.jpg", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
 
 
@@ -413,3 +413,4 @@ with right_col:
 
 st.markdown("---")
 st.caption("🎓 FYP – AI-Based Depression Detection")
+
